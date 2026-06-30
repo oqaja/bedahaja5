@@ -12,18 +12,19 @@
   }
   *{box-sizing:border-box;}
   body{
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing: antialiased;
   }
   header{
     padding:16px 24px; background:var(--bg2); border-bottom:1px solid var(--line);
     display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
-    position:sticky; top:0; z-index:10; backdrop-filter: blur(8px);
+    position:sticky; top:0; z-index:10;
   }
   header h1{font-size:20px; margin:0; letter-spacing:0.5px; font-weight: 800;}
   header h1 span{color:var(--accent);}
   
-  .nav-group{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+  .nav-group{display:flex; gap:10px; align-items:center;}
+  nav{display:flex; gap:10px; flex-wrap:wrap;}
   nav button, .btn{
     background:var(--accent); color:#111; border:none; padding:10px 18px;
     border-radius:var(--radius); font-weight:600; cursor:pointer; font-size:14px;
@@ -33,33 +34,33 @@
   nav button.secondary, .btn.secondary{background:var(--card); color:var(--text); border:1px solid var(--line);}
   nav button.danger, .btn.danger{background:var(--accent2); color:#fff;}
   
-  .role-indicator {
-    font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; 
-    border-radius: 20px; letter-spacing: 1px; cursor: pointer;
+  .badge-status {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 6px 12px; 
+    border-radius: 20px; letter-spacing: 1px;
   }
-  .role-admin { background: rgba(255,184,0,0.15); color: var(--accent); border: 1px solid var(--accent); }
-  .role-viewer { background: rgba(142,142,147,0.15); color: var(--muted); border: 1px solid var(--line); }
+  .status-admin { background: rgba(255,184,0,0.15); color: var(--accent); border: 1px solid var(--accent); }
+  .status-viewer { background: rgba(142,142,147,0.12); color: var(--muted); border: 1px solid var(--line); }
 
   main{padding:24px; max-width:1200px; margin:0 auto;}
-  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px;}
   
   .card{
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-    padding:18px; cursor:pointer; transition:all 0.2s ease; position:relative;
+    padding:20px; cursor:pointer; transition:all 0.2s ease; position:relative;
   }
-  .card:hover{border-color:var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3);}
-  .card h3{margin:0 0 6px; font-size:17px; font-weight: 700; line-height: 1.3;}
+  .card:hover{border-color:var(--accent); transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.4);}
+  .card h3{margin:0 0 6px; font-size:18px; font-weight: 700; line-height: 1.3;}
   .card p{margin:4px 0; font-size:13px; color:var(--muted);}
   .tag{
-    display:inline-block; background:rgba(255,184,0,0.1); border:1px solid rgba(255,184,0,0.2);
-    padding:4px 10px; border-radius:20px; font-size:11px; color:var(--accent); margin-top:10px; font-weight: 600;
+    display:inline-block; background:rgba(255,184,0,0.08); border:1px solid rgba(255,184,0,0.15);
+    padding:4px 10px; border-radius:20px; font-size:11px; color:var(--accent); margin-top:12px; font-weight: 600;
   }
   
-  .ck{position:absolute; top:18px; right:18px; width:18px; height:18px; z-index:2; cursor:pointer;}
+  .ck{position:absolute; top:20px; right:20px; width:18px; height:18px; z-index:2; cursor:pointer;}
   
   .compare-bar{
     position:fixed; bottom:24px; left:50%; transform: translateX(-50%); background:var(--bg2); 
-    border:1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    border:1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,0.6);
     padding:12px 24px; border-radius: 30px; display:flex; align-items:center; gap:16px; z-index:20;
   }
   
@@ -67,14 +68,14 @@
   table.compare-table th, table.compare-table td{ border:1px solid var(--line); padding:12px 16px; text-align:left; vertical-align:top; }
   table.compare-table th{background:var(--bg2); color:var(--accent); font-weight: 700;}
   table.compare-table td.label-col{ background:var(--bg2); color:var(--muted); font-weight:600; white-space:nowrap; }
-  table.compare-table tr.section-row td{background:rgba(255,184,0,0.05); color:var(--accent); font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;}
-  .table-scroll{overflow-x:auto; border-radius: var(--radius); border: 1px solid var(--line); margin-top: 16px;}
+  table.compare-table tr.section-row td{background:rgba(255,184,0,0.04); color:var(--accent); font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;}
+  .table-scroll{overflow-x:auto; border-radius: var(--radius); border: 1px solid var(--line); margin-top: 16px; padding-bottom: 4px;}
   
   form{display:flex; flex-direction:column; gap:16px;}
   fieldset{border:1px solid var(--line); border-radius:var(--radius); padding:20px; background:var(--card);}
   legend{padding:0 10px; font-weight:700; color:var(--accent); font-size:16px;}
-  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight: 500;}
-  input[type=text], select{ width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px; transition: border 0.2s; }
+  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px;}
+  input[type=text], select{ width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px; }
   input[type=text]:focus, select:focus{ border-color: var(--accent); outline: none; }
   
   .field{margin-bottom:12px;}
@@ -85,7 +86,7 @@
   
   .detail-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
   .detail-section{ background: var(--card); border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); }
-  .detail-section h2{font-size:16px; color:var(--accent); margin: 0 0 16px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
+  .detail-section h2{font-size:15px; color:var(--accent); margin: 0 0 16px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
   .kv{display:grid; grid-template-columns:180px 1fr; gap:12px 16px; font-size:14px;}
   .kv div.k{color:var(--muted); font-weight: 500;}
   
@@ -96,12 +97,10 @@
   .badge-Excelent{color:#3ddc84; background: rgba(61, 220, 132, 0.1);}
   
   .empty{color:var(--muted); text-align:center; padding:80px 20px;}
-  footer{text-align:center; padding:40px 10px; color:var(--muted); font-size:12px; border-top: 1px solid var(--line); margin-top: 40px;}
+  footer{text-align:center; padding:40px 10px; color:var(--muted); font-size:12px;}
   
-  /* Helper class untuk menyembunyikan elemen admin */
+  /* Sembunyikan semua elemen berkelas admin-only secara default */
   .admin-only { display: none !important; }
-  body.admin-mode .admin-only { display: inline-flex !important; }
-  body.admin-mode .admin-only.flex-block { display: block !important; }
 </style>
 </head>
 <body>
@@ -111,67 +110,52 @@
   <div class="nav-group">
     <nav>
       <button class="secondary" onclick="go('list')">📋 List Sepatu</button>
-      <button class="admin-only" onclick="go('form')">➕ Tambah Hasil Bedah</button>
-      <button class="secondary admin-only" onclick="exportData()">⬇️ Export</button>
-      <label class="btn secondary admin-only" style="margin:0;">
+      <button class="admin-only" id="btnTambah" onclick="go('form')">➕ Tambah Hasil Bedah</button>
+      <button class="secondary admin-only" id="btnExport" onclick="exportData()">⬇️ Export</button>
+      <label class="btn secondary admin-only" id="lblImport" style="margin:0;">
         ⬆️ Import
         <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
       </label>
-      <button class="secondary admin-only" onclick="go('settings')">⚙️</button>
+      <button class="secondary admin-only" id="btnSetting" onclick="go('settings')">⚙️</button>
     </nav>
-    <div id="roleIndicator" class="role-indicator role-viewer" onclick="toggleRole()">👁️ Viewer Mode</div>
+    <div id="statusBadge" class="badge-status status-viewer">👁️ Penonton</div>
   </div>
 </header>
 
 <main id="app"></main>
 
-<footer>Shoe Police Teardown DB — Data terhubung live dengan Google Sheets.</footer>
+<footer>Shoe Police Teardown DB — data sinkron dengan Google Sheets.</footer>
 
 <script>
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCKQ6Sai2qbn77CS5JtRVnr9-C6OMq_dUAZI-OnIJgqwOoKERRPovaqjwaItbWab7X/exec';
 const SCRIPT_URL_KEY = 'sp_script_url';
-const ROLE_KEY = 'sp_user_role'; // Menyimpan status admin/viewer di browser
-
 let cachedData = null;
-// Default mode adalah 'viewer'. Ubah ke 'admin' lewat tombol/indikator di kanan atas.
-let currentRole = localStorage.getItem(ROLE_KEY) || 'viewer'; 
+
+// DETEKSI ROLE BERDASARKAN URL PARAMETER (?admin=true)
+const urlParams = new URLSearchParams(window.location.search);
+const isAdmin = urlParams.get('admin') === 'true';
+
+// Inject CSS langsung buat munculin tombol khusus kalau dia beneran admin
+if (isAdmin) {
+  const style = document.createElement('style');
+  style.innerHTML = '.admin-only { display: inline-flex !important; }';
+  document.head.appendChild(style);
+}
+
+function updateBadge() {
+  const badge = document.getElementById('statusBadge');
+  if (isAdmin) {
+    badge.className = 'badge-status status-admin';
+    badge.innerHTML = '⚡ Pemilik (Admin)';
+  } else {
+    badge.className = 'badge-status status-viewer';
+    badge.innerHTML = '👁️ Penonton';
+  }
+}
 
 function getScriptUrl(){ return localStorage.getItem(SCRIPT_URL_KEY) || DEFAULT_SCRIPT_URL; }
 function setScriptUrl(url){ localStorage.setItem(SCRIPT_URL_KEY, url.trim()); }
 function uid(){ return 'sh_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
-
-// Fungsi ganti Role (Bisa di-klik pemilik untuk masuk mode editing)
-function updateRoleUI() {
-  const body = document.body;
-  const indicator = document.getElementById('roleIndicator');
-  if (currentRole === 'admin') {
-    body.classList.add('admin-mode');
-    indicator.className = 'role-indicator role-admin';
-    indicator.innerHTML = '⚡ Admin Mode';
-  } else {
-    body.classList.remove('admin-mode');
-    indicator.className = 'role-indicator role-viewer';
-    indicator.innerHTML = '👁️ Viewer Mode';
-  }
-}
-
-function toggleRole() {
-  if (currentRole === 'viewer') {
-    // Opsional: Lo bisa kasih prompt password sederhana di sini biar penonton iseng gak bisa masuk
-    const pass = prompt("Masukkan PIN Pemilik untuk masuk Mode Admin (kosongkan jika belum setup):");
-    if (pass === "1234" || pass === "") { // Ganti "1234" sesuai keinginan lo, atau hapus validasinya
-      currentRole = 'admin';
-    } else {
-      alert("PIN Salah!"); return;
-    }
-  } else {
-    currentRole = 'viewer';
-  }
-  localStorage.setItem(ROLE_KEY, currentRole);
-  updateRoleUI();
-  // Re-render view sekarang biar tombol-tombol menyesuaikan hak akses
-  handleHash(); 
-}
 
 async function apiGet(){
   const url = getScriptUrl();
@@ -212,10 +196,10 @@ function selectOptions(options, selected){
 // ---------------- ROUTER ----------------
 async function route(view, id){
   const app = document.getElementById('app');
-  updateRoleUI();
+  updateBadge();
 
   if(!getScriptUrl() && view !== 'settings'){
-    app.innerHTML = renderSettingsPrompt();
+    app.innerHTML = `<div class="empty"><h2>👋 Setup Database</h2><button class="btn" onclick="go('settings')">⚙️ Masukin Script URL</button></div>`;
     return;
   }
 
@@ -235,18 +219,8 @@ async function route(view, id){
     app.innerHTML = `<div class="empty">
       <h2>⚠️ Gagal konek ke Google Sheets</h2>
       <p>${esc(err.message)}</p>
-      <p class="admin-only">Cek lagi Script URL-nya di tombol ⚙️ Settings.</p>
-      <button class="btn admin-only" onclick="go('settings')">⚙️ Buka Settings</button>
     </div>`;
   }
-}
-
-function renderSettingsPrompt(){
-  return `<div class="empty">
-    <h2>👋 Setup Database</h2>
-    <p>Web ini butuh URL Apps Script biar bisa connect ke Google Sheets.</p>
-    <button class="btn" onclick="go('settings')">⚙️ Masukin Script URL</button>
-  </div>`;
 }
 
 function renderSettings(){
@@ -256,11 +230,11 @@ function renderSettings(){
     <legend>⚙️ Settings</legend>
     <div class="field">
       <label>Google Apps Script Web App URL</label>
-      <input type="text" id="settingsUrl" value="${escAttr(url)}" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+      <input type="text" id="settingsUrl" value="${escAttr(url)}">
     </div>
     <div class="actions">
       <button class="btn secondary" onclick="go('list')">Batal</button>
-      <button class="btn" onclick="saveSettings()">Simpan & Coba Konek</button>
+      <button class="btn" onclick="saveSettings()">Simpan</button>
     </div>
   </fieldset>`;
 }
@@ -286,6 +260,8 @@ function handleHash(){
 window.addEventListener('hashchange', handleHash);
 
 function go(view, id){
+  // Tetap mempertahankan query string admin saat pindah halaman hash
+  const q = isAdmin ? '?admin=true' : '';
   if(view==='detail') location.hash = 'detail/' + id;
   else if(view==='form' && id) location.hash = 'edit/' + id;
   else if(view==='form') location.hash = 'form';
@@ -298,10 +274,7 @@ document.addEventListener('DOMContentLoaded', handleHash);
 // ---------------- LIST ----------------
 function renderList(data){
   if(data.length === 0){
-    return `<div class="empty">
-      <h2>Belum ada sepatu yang dibedah 👟</h2>
-      <p class="admin-only">Klik "Tambah Hasil Bedah" buat mulai isi data teardown pertama.</p>
-    </div>`;
+    return `<div class="empty"><h2>Belum ada sepatu yang dibedah 👟</h2></div>`;
   }
   const cards = data.map(d => `
     <div class="card" onclick="go('detail','${d.id}')">
@@ -339,7 +312,7 @@ function clearSelect(){
   route('list');
 }
 
-// ---------------- FORM (ADMIN ONLY IN SPIRIT) ----------------
+// ---------------- FORM ----------------
 function abrasionBlock(prefix, label, val){
   val = val || {};
   return `
@@ -353,8 +326,7 @@ function abrasionBlock(prefix, label, val){
 }
 
 function renderForm(id, item){
-  // Proteksi client-side sederhana jika viewer coba-coba ketik #form
-  if(currentRole !== 'admin') { return `<div class="empty"><h2>🔒 Akses Ditolak</h2><p>Hanya pemilik yang bisa menambah/mengubah data.</p><button class="btn" onclick="go('list')">Kembali ke List</button></div>`; }
+  if(!isAdmin) { return `<div class="empty"><h2>🔒 Akses Ditolak</h2><p>Hanya pemilik yang bisa masuk halaman ini.</p></div>`; }
   
   const editing = !!id;
   const i = item ? item.identify : {};
@@ -371,7 +343,7 @@ function renderForm(id, item){
       </div>
       <div class="row2">
         <div class="field"><label>Size Sample</label><input type="text" id="f_size" value="${escAttr(i.size)}"></div>
-        <div class="field"><label>Jenis Sepatu</label><input type="text" id="f_shoeType" value="${escAttr(i.shoeType)}" placeholder="Contoh: Running, Basketball, Casual"></div>
+        <div class="field"><label>Jenis Sepatu</label><input type="text" id="f_shoeType" value="${escAttr(i.shoeType)}"></div>
       </div>
     </fieldset>
 
@@ -397,7 +369,7 @@ function renderForm(id, item){
           <select id="f_padding">${selectOptions(PADDING_OPTIONS, u.padding)}</select>
         </div>
       </div>
-      <div class="field"><label>Ketebalan Material Upper (mm)</label><input type="text" id="f_thickness" value="${escAttr(u.thickness)}" placeholder="Contoh: 1.5 mm"></div>
+      <div class="field"><label>Ketebalan Material Upper (mm)</label><input type="text" id="f_thickness" value="${escAttr(u.thickness)}"></div>
 
       <label style="margin:16px 0 8px; font-weight:700; color:var(--accent)">Hasil Abrasion (Uji Gosok Dremel)</label>
       ${abrasionBlock('f_ab1', 'Material Upper Layer 1', ab && ab.material1)}
@@ -418,7 +390,7 @@ async function saveForm(e, id){
   const val = (sel) => document.getElementById(sel).value.trim();
   const submitBtn = e.target.querySelector('button[type=submit]');
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Mengirim data ke Sheets...';
+  submitBtn.textContent = 'Menyimpan...';
 
   const existing = id ? (await getData()).find(d=>d.id===id) : null;
 
@@ -444,9 +416,8 @@ async function saveForm(e, id){
     cachedData = null;
     go('detail', newItem.id);
   } catch(err){
-    alert('Gagal simpan ke Google Sheets: ' + err.message);
+    alert('Gagal simpan: ' + err.message);
     submitBtn.disabled = false;
-    submitBtn.textContent = id ? 'Simpan Perubahan' : 'Publish Hasil Bedah';
   }
   return false;
 }
@@ -499,7 +470,7 @@ function renderDetail(d, id){
     <div class="detail-section">
       <h2>Kekuatan Durabilitas (Abrasion Test)</h2>
       <div class="kv">
-        ${abRow('Material Lapisan 1', ab.material1) || '<div>-</div><div>Belum diuji uji gosok</div>'}
+        ${abRow('Material Lapisan 1', ab.material1) || '<div>-</div><div>Belum ada data uji gosok</div>'}
         ${abRow('Material Lapisan 2', ab.material2)}
         ${abRow('Material Lapisan 3', ab.material3)}
         ${abRow('Durabilitas Lining', ab.lining)}
@@ -510,9 +481,7 @@ function renderDetail(d, id){
 
 // ---------------- COMPARE ----------------
 function renderCompare(items){
-  if(items.length < 2){
-    return `<div class="empty"><h2>Pilih minimal 2 sepatu di halaman depan untuk membandingkan.</h2><button class="btn" onclick="go('list')">Kembali</button></div>`;
-  }
+  if(items.length < 2) return `<div class="empty"><h2>Pilih minimal 2 sepatu untuk membandingkan.</h2></div>`;
 
   const abCell = (obj) => {
     if(!obj || !obj.rating) return '-';
@@ -545,9 +514,7 @@ function renderCompare(items){
   ];
 
   const bodyRows = rows.map(r => {
-    if(r.section){
-      return `<tr class="section-row"><td class="label-col">${r.section}</td>${items.map(()=>'<td></td>').join('')}</tr>`;
-    }
+    if(r.section) return `<tr class="section-row"><td class="label-col">${r.section}</td>${items.map(()=>'<td></td>').join('')}</tr>`;
     return `<tr><td class="label-col">${r.label}</td>${items.map(d => `<td>${r.get(d)}</td>`).join('')}</tr>`;
   }).join('');
 
@@ -565,17 +532,14 @@ function renderCompare(items){
 }
 
 async function deleteItem(id){
-  if(!confirm('Apakah lo yakin ingin menghapus data sepatu ini secara permanen dari Google Sheets?')) return;
+  if(!confirm('Hapus permanen dari Google Sheets?')) return;
   try{
     await apiPost({ action: 'delete', id: id });
     cachedData = null;
     go('list');
-  } catch(err){
-    alert('Gagal hapus: ' + err.message);
-  }
+  } catch(err){ alert('Gagal hapus: ' + err.message); }
 }
 
-// ---------------- IMPORT / EXPORT ----------------
 async function exportData(){
   try{
     const data = await getData(true);
@@ -596,7 +560,6 @@ async function importData(e){
     try{
       const imported = JSON.parse(ev.target.result);
       if(!Array.isArray(imported)) throw new Error('Format salah');
-      if(!confirm(`Import ${imported.length} data ke Google Sheets?`)) return;
       for(const item of imported){ await apiPost({ action: 'create', item: item }); }
       cachedData = null;
       alert('Import sukses!');
