@@ -99,7 +99,6 @@
   .empty{color:var(--muted); text-align:center; padding:80px 20px;}
   footer{text-align:center; padding:40px 10px; color:var(--muted); font-size:12px;}
   
-  /* Sembunyikan semua elemen berkelas admin-only secara default */
   .admin-only { display: none !important; }
 </style>
 </head>
@@ -129,13 +128,14 @@
 <script>
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCKQ6Sai2qbn77CS5JtRVnr9-C6OMq_dUAZI-OnIJgqwOoKERRPovaqjwaItbWab7X/exec';
 const SCRIPT_URL_KEY = 'sp_script_url';
+const CACHE_DATA_KEY = 'sp_cached_shoes_data'; // Key localstorage baru
+
 let cachedData = null;
 
-// DETEKSI ROLE BERDASARKAN URL PARAMETER (?admin=true)
+// Deteksi Admin
 const urlParams = new URLSearchParams(window.location.search);
 const isAdmin = urlParams.get('admin') === 'true';
 
-// Inject CSS langsung buat munculin tombol khusus kalau dia beneran admin
 if (isAdmin) {
   const style = document.createElement('style');
   style.innerHTML = '.admin-only { display: inline-flex !important; }';
@@ -144,12 +144,14 @@ if (isAdmin) {
 
 function updateBadge() {
   const badge = document.getElementById('statusBadge');
-  if (isAdmin) {
-    badge.className = 'badge-status status-admin';
-    badge.innerHTML = '⚡ Pemilik (Admin)';
-  } else {
-    badge.className = 'badge-status status-viewer';
-    badge.innerHTML = '👁️ Penonton';
+  if (badge) {
+    if (isAdmin) {
+      badge.className = 'badge-status status-admin';
+      badge.innerHTML = '⚡ Pemilik (Admin)';
+    } else {
+      badge.className = 'badge-status status-viewer';
+      badge.innerHTML = '👁️ Penonton';
+    }
   }
 }
 
@@ -179,10 +181,41 @@ async function apiPost(payload){
   return json;
 }
 
+// STRATEGI FAST LOADING: TAMPILKAN CACHE DULU, FETCH BELAKANGAN
 async function getData(forceRefresh){
   if(cachedData && !forceRefresh) return cachedData;
-  cachedData = await apiGet();
-  return cachedData;
+  
+  // Ambil data yang tersimpan di browser terlebih dahulu (Instan!)
+  const localCache = localStorage.getItem(CACHE_DATA_KEY);
+  if(localCache && !forceRefresh) {
+    cachedData = JSON.parse(localCache);
+    // Jalankan fetch di background secara silent untuk memperbarui cache tanpa bikin nunggu
+    fetchAndUpdateCache();
+    return cachedData;
+  }
+  
+  // Jika cache kosong total, baru terpaksa nunggu fetch utama
+  return await fetchAndUpdateCache();
+}
+
+async function fetchAndUpdateCache() {
+  try {
+    const data = await apiGet();
+    cachedData = data;
+    localStorage.setItem(CACHE_DATA_KEY, JSON.stringify(data));
+    
+    // Jika user sedang berada di halaman 'list', re-render otomatis biar dapet data paling fresh
+    const hash = location.hash.slice(1);
+    if(!hash || hash === 'list') {
+      const app = document.getElementById('app');
+      if(app) app.innerHTML = renderList(cachedData);
+    }
+    return data;
+  } catch(e) {
+    console.error("Gagal refresh data dari server:", e);
+    if(cachedData) return cachedData;
+    throw e;
+  }
 }
 
 const RATING_OPTIONS = ['', 'Poor', 'Fair', 'Good', 'Excelent'];
@@ -203,15 +236,20 @@ async function route(view, id){
     return;
   }
 
-  app.innerHTML = '<div class="empty">⏳ Memuat database bedah sepatu...</div>';
+  // Cek apakah sudah ada data di cache browser
+  const hasCache = localStorage.getItem(CACHE_DATA_KEY);
+  if(!hasCache) {
+    app.innerHTML = '<div class="empty">⏳ Memuat database bedah sepatu untuk pertama kali...</div>';
+  }
+  
   try{
-    if(view === 'list') app.innerHTML = renderList(await getData());
-    else if(view === 'form') app.innerHTML = renderForm(id, id ? (await getData()).find(d=>d.id===id) : null);
-    else if(view === 'detail') app.innerHTML = renderDetail((await getData()).find(d=>d.id===id), id);
+    const data = await getData();
+    if(view === 'list') app.innerHTML = renderList(data);
+    else if(view === 'form') app.innerHTML = renderForm(id, id ? data.find(d=>d.id===id) : null);
+    else if(view === 'detail') app.innerHTML = renderDetail(data.find(d=>d.id===id), id);
     else if(view === 'compare'){
       const ids = id.split(',');
-      const all = await getData();
-      const items = ids.map(i => all.find(d=>d.id===i)).filter(Boolean);
+      const items = ids.map(i => data.find(d=>d.id===i)).filter(Boolean);
       app.innerHTML = renderCompare(items);
     }
     else if(view === 'settings') app.innerHTML = renderSettings();
@@ -244,7 +282,8 @@ function saveSettings(){
   if(!url){ alert('URL tidak boleh kosong'); return; }
   setScriptUrl(url);
   cachedData = null;
-  go('list');
+  localStorage.removeItem(CACHE_DATA_KEY);
+  route('list');
 }
 
 function handleHash(){
@@ -260,8 +299,6 @@ function handleHash(){
 window.addEventListener('hashchange', handleHash);
 
 function go(view, id){
-  // Tetap mempertahankan query string admin saat pindah halaman hash
-  const q = isAdmin ? '?admin=true' : '';
   if(view==='detail') location.hash = 'detail/' + id;
   else if(view==='form' && id) location.hash = 'edit/' + id;
   else if(view==='form') location.hash = 'form';
@@ -273,7 +310,7 @@ document.addEventListener('DOMContentLoaded', handleHash);
 
 // ---------------- LIST ----------------
 function renderList(data){
-  if(data.length === 0){
+  if(!data || data.length === 0){
     return `<div class="empty"><h2>Belum ada sepatu yang dibedah 👟</h2></div>`;
   }
   const cards = data.map(d => `
@@ -305,11 +342,14 @@ let selectedIds = new Set();
 function toggleSelect(id){
   if(selectedIds.has(id)) selectedIds.delete(id);
   else selectedIds.add(id);
-  route('list');
+  // Re-render instant dari data cache local
+  const app = document.getElementById('app');
+  if(app && cachedData) app.innerHTML = renderList(cachedData);
 }
 function clearSelect(){
   selectedIds.clear();
-  route('list');
+  const app = document.getElementById('app');
+  if(app && cachedData) app.innerHTML = renderList(cachedData);
 }
 
 // ---------------- FORM ----------------
@@ -392,11 +432,9 @@ async function saveForm(e, id){
   submitBtn.disabled = true;
   submitBtn.textContent = 'Menyimpan...';
 
-  const existing = id ? (await getData()).find(d=>d.id===id) : null;
-
   const newItem = {
     id: id || uid(),
-    createdAt: existing ? existing.createdAt : Date.now(),
+    createdAt: Date.now(),
     identify: { brand: val('f_brand'), model: val('f_model'), size: val('f_size'), shoeType: val('f_shoeType') },
     upper: {
       toebox: val('f_toebox'), vamp: val('f_vamp'), quarter: val('f_quarter'), tongue: val('f_tongue'),
@@ -414,6 +452,8 @@ async function saveForm(e, id){
   try{
     await apiPost({ action: id ? 'update' : 'create', item: newItem });
     cachedData = null;
+    localStorage.removeItem(CACHE_DATA_KEY); // Hapus cache lama biar ke-refresh otomatis
+    await getData(true);
     go('detail', newItem.id);
   } catch(err){
     alert('Gagal simpan: ' + err.message);
@@ -536,7 +576,8 @@ async function deleteItem(id){
   try{
     await apiPost({ action: 'delete', id: id });
     cachedData = null;
-    go('list');
+    localStorage.removeItem(CACHE_DATA_KEY);
+    route('list');
   } catch(err){ alert('Gagal hapus: ' + err.message); }
 }
 
@@ -562,8 +603,9 @@ async function importData(e){
       if(!Array.isArray(imported)) throw new Error('Format salah');
       for(const item of imported){ await apiPost({ action: 'create', item: item }); }
       cachedData = null;
+      localStorage.removeItem(CACHE_DATA_KEY);
       alert('Import sukses!');
-      go('list');
+      route('list');
     } catch(err){ alert('Gagal import: ' + err.message); }
   };
   reader.readAsText(file);
