@@ -93,11 +93,14 @@
 <footer>Shoe Police Teardown DB — data tersimpan lokal di browser ini.</footer>
 
 <script>
-// SCRIPT_URL_KEY only stores the Apps Script endpoint config locally — NOT the shoe data itself.
+// Default Script URL — udah diisi otomatis, user nggak perlu setting manual lagi.
+// Kalau nanti pindah Sheets/redeploy, ganti string di bawah ini.
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCKQ6Sai2qbn77CS5JtRVnr9-C6OMq_dUAZI-OnIJgqwOoKERRPovaqjwaItbWab7X/exec';
+
 const SCRIPT_URL_KEY = 'sp_script_url';
 let cachedData = null; // in-memory cache of shoes fetched from Google Sheets
 
-function getScriptUrl(){ return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
+function getScriptUrl(){ return localStorage.getItem(SCRIPT_URL_KEY) || DEFAULT_SCRIPT_URL; }
 function setScriptUrl(url){ localStorage.setItem(SCRIPT_URL_KEY, url.trim()); }
 
 function uid(){ return 'sh_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
