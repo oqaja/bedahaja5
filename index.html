@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shoe Police Teardown DB</title>
+<style>
+  :root{
+    --bg:#0f0f10; --bg2:#181819; --card:#1e1e20; --line:#2c2c2f;
+    --text:#f2f2f0; --muted:#9a9a9e; --accent:#ffb800; --accent2:#ff5a36;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:var(--bg); color:var(--text); min-height:100vh;
+  }
+  header{
+    padding:18px 20px; background:var(--bg2); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
+    position:sticky; top:0; z-index:10;
+  }
+  header h1{font-size:18px; margin:0; letter-spacing:0.5px;}
+  header h1 span{color:var(--accent);}
+  nav{display:flex; gap:8px; flex-wrap:wrap;}
+  nav button, .btn{
+    background:var(--accent); color:#111; border:none; padding:9px 16px;
+    border-radius:var(--radius); font-weight:600; cursor:pointer; font-size:14px;
+  }
+  nav button.secondary, .btn.secondary{background:transparent; color:var(--text); border:1px solid var(--line);}
+  nav button.danger, .btn.danger{background:var(--accent2); color:#fff;}
+  main{padding:20px; max-width:1100px; margin:0 auto;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px; cursor:pointer; transition:.15s;
+  }
+  .card:hover{border-color:var(--accent);}
+  .card h3{margin:0 0 4px; font-size:16px;}
+  .card p{margin:2px 0; font-size:13px; color:var(--muted);}
+  .tag{
+    display:inline-block; background:var(--bg2); border:1px solid var(--line);
+    padding:2px 8px; border-radius:20px; font-size:11px; color:var(--accent); margin-top:6px;
+  }
+  .empty{color:var(--muted); text-align:center; padding:60px 20px;}
+  form{display:flex; flex-direction:column; gap:14px;}
+  fieldset{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:var(--card);}
+  legend{padding:0 8px; font-weight:700; color:var(--accent); font-size:15px;}
+  label{display:block; font-size:13px; color:var(--muted); margin-bottom:4px;}
+  input[type=text], input[type=number], select, textarea{
+    width:100%; padding:9px 10px; background:var(--bg); border:1px solid var(--line);
+    border-radius:8px; color:var(--text); font-size:14px;
+  }
+  textarea{resize:vertical; min-height:50px;}
+  .field{margin-bottom:10px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .abrasion-block{
+    border:1px dashed var(--line); border-radius:8px; padding:10px; margin-bottom:10px; background:var(--bg2);
+  }
+  .abrasion-block .row2{grid-template-columns:1fr 2fr;}
+  .actions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;}
+  .detail-section{margin-bottom:18px;}
+  .detail-section h2{font-size:15px; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px;}
+  .kv{display:grid; grid-template-columns:200px 1fr; gap:6px 14px; font-size:14px;}
+  .kv div.k{color:var(--muted);}
+  .badge-rating{font-weight:700;}
+  .badge-Poor{color:var(--accent2);}
+  .badge-Fair{color:#e0c419;}
+  .badge-Good{color:#7ed957;}
+  .badge-Excelent{color:#3ddc84;}
+  footer{text-align:center; padding:30px 10px; color:var(--muted); font-size:12px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Shoe<span>Police</span> // Teardown DB</h1>
+  <nav>
+    <button class="secondary" onclick="go('list')">📋 List</button>
+    <button onclick="go('form')">➕ Tambah Sepatu</button>
+    <button class="secondary" onclick="exportData()">⬇️ Export JSON</button>
+    <label class="btn secondary" style="margin:0;">
+      ⬆️ Import JSON
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    </label>
+    <button class="secondary" onclick="go('settings')">⚙️</button>
+  </nav>
+</header>
+
+<main id="app"></main>
+
+<footer>Shoe Police Teardown DB — data tersimpan lokal di browser ini.</footer>
+
+<script>
+// SCRIPT_URL_KEY only stores the Apps Script endpoint config locally — NOT the shoe data itself.
+const SCRIPT_URL_KEY = 'sp_script_url';
+let cachedData = null; // in-memory cache of shoes fetched from Google Sheets
+
+function getScriptUrl(){ return localStorage.getItem(SCRIPT_URL_KEY) || ''; }
+function setScriptUrl(url){ localStorage.setItem(SCRIPT_URL_KEY, url.trim()); }
+
+function uid(){ return 'sh_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+
+async function apiGet(){
+  const url = getScriptUrl();
+  if(!url) throw new Error('NO_URL');
+  const res = await fetch(url, { method: 'GET' });
+  const json = await res.json();
+  if(json.status !== 'ok') throw new Error(json.message || 'API error');
+  return json.data;
+}
+
+async function apiPost(payload){
+  const url = getScriptUrl();
+  if(!url) throw new Error('NO_URL');
+  // text/plain content-type avoids CORS preflight issues with Apps Script web apps
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const json = await res.json();
+  if(json.status !== 'ok') throw new Error(json.message || 'API error');
+  return json;
+}
+
+async function getData(forceRefresh){
+  if(cachedData && !forceRefresh) return cachedData;
+  cachedData = await apiGet();
+  return cachedData;
+}
+
+const RATING_OPTIONS = ['', 'Poor', 'Fair', 'Good', 'Excelent'];
+const GUSSET_OPTIONS = ['', 'Non-Gusseted', 'Semi Gusseted', 'Gusseted'];
+const PADDING_OPTIONS = ['', 'Padding', 'No Padding'];
+
+function selectOptions(options, selected){
+  return options.map(o => `<option value="${o}" ${o===selected?'selected':''}>${o || '— pilih —'}</option>`).join('');
+}
+
+// ---------------- ROUTER ----------------
+async function route(view, id){
+  const app = document.getElementById('app');
+
+  if(!getScriptUrl() && view !== 'settings'){
+    app.innerHTML = renderSettingsPrompt();
+    return;
+  }
+
+  app.innerHTML = '<div class="empty">⏳ Memuat data dari Google Sheets...</div>';
+  try{
+    if(view === 'list') app.innerHTML = renderList(await getData());
+    else if(view === 'form') app.innerHTML = renderForm(id, id ? (await getData()).find(d=>d.id===id) : null);
+    else if(view === 'detail') app.innerHTML = renderDetail((await getData()).find(d=>d.id===id), id);
+    else if(view === 'settings') app.innerHTML = renderSettings();
+  } catch(err){
+    app.innerHTML = `<div class="empty">
+      <h2>⚠️ Gagal konek ke Google Sheets</h2>
+      <p>${esc(err.message)}</p>
+      <p>Cek lagi Script URL-nya di tombol ⚙️ Settings.</p>
+      <button class="btn" onclick="go('settings')">⚙️ Buka Settings</button>
+    </div>`;
+  }
+}
+
+function renderSettingsPrompt(){
+  return `<div class="empty">
+    <h2>👋 Setup dulu, bro</h2>
+    <p>Web ini butuh URL Apps Script biar bisa connect ke Google Sheets lo.</p>
+    <button class="btn" onclick="go('settings')">⚙️ Masukin Script URL</button>
+  </div>`;
+}
+
+function renderSettings(){
+  const url = getScriptUrl();
+  return `
+  <fieldset style="max-width:600px; margin:0 auto;">
+    <legend>⚙️ Settings</legend>
+    <div class="field">
+      <label>Google Apps Script Web App URL</label>
+      <input type="text" id="settingsUrl" value="${escAttr(url)}" placeholder="https://script.google.com/macros/s/xxxxx/exec">
+    </div>
+    <p style="color:var(--muted); font-size:13px;">
+      Dapetin URL ini dari Apps Script: Deploy > New deployment > Web app > copy URL-nya.
+      Liat panduan lengkap di README.
+    </p>
+    <div class="actions">
+      <button class="btn secondary" onclick="go('list')">Batal</button>
+      <button class="btn" onclick="saveSettings()">Simpan & Coba Konek</button>
+    </div>
+  </fieldset>`;
+}
+
+function saveSettings(){
+  const url = document.getElementById('settingsUrl').value.trim();
+  if(!url){ alert('URL nggak boleh kosong, bro.'); return; }
+  setScriptUrl(url);
+  cachedData = null;
+  go('list');
+}
+
+function handleHash(){
+  const hash = location.hash.slice(1);
+  if(hash.startsWith('detail/')) route('detail', hash.split('/')[1]);
+  else if(hash.startsWith('edit/')) route('form', hash.split('/')[1]);
+  else if(hash === 'form') route('form');
+  else if(hash === 'settings') route('settings');
+  else route('list');
+  window.scrollTo(0,0);
+}
+window.addEventListener('hashchange', handleHash);
+
+function go(view, id){
+  if(view==='detail') location.hash = 'detail/' + id;
+  else if(view==='form' && id) location.hash = 'edit/' + id;
+  else if(view==='form') location.hash = 'form';
+  else if(view==='settings') location.hash = 'settings';
+  else location.hash = '';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  handleHash();
+});
+
+// ---------------- LIST ----------------
+function renderList(data){
+  if(data.length === 0){
+    return `<div class="empty">
+      <h2>Belum ada sepatu yang dibedah 👟</h2>
+      <p>Klik "Tambah Sepatu" buat mulai isi data teardown pertama.</p>
+    </div>`;
+  }
+  const cards = data.map(d => `
+    <div class="card" onclick="go('detail','${d.id}')">
+      <h3>${esc(d.identify.brand)} ${esc(d.identify.model)}</h3>
+      <p>Size: ${esc(d.identify.size) || '-'}</p>
+      <p>Type: ${esc(d.identify.shoeType) || '-'}</p>
+      <span class="tag">${esc(d.identify.shoeType) || 'Unknown'}</span>
+    </div>
+  `).join('');
+  return `<div class="grid">${cards}</div>`;
+}
+
+// ---------------- FORM ----------------
+function abrasionBlock(prefix, label, val){
+  val = val || {};
+  return `
+  <div class="abrasion-block">
+    <label>${label}</label>
+    <div class="row2">
+      <select id="${prefix}_rating">${selectOptions(RATING_OPTIONS, val.rating)}</select>
+      <input type="text" id="${prefix}_note" placeholder="Keterangan" value="${escAttr(val.note)}">
+    </div>
+  </div>`;
+}
+
+function renderForm(id, item){
+  const editing = !!id;
+  const i = item ? item.identify : {};
+  const u = item ? item.upper : {};
+  const ab = item ? item.upper.abrasion : {};
+
+  return `
+  <form id="shoeForm" onsubmit="return saveForm(event,'${id||''}')">
+    <fieldset>
+      <legend>Identify</legend>
+      <div class="row2">
+        <div class="field"><label>Brand</label><input type="text" id="f_brand" value="${escAttr(i.brand)}" required></div>
+        <div class="field"><label>Model</label><input type="text" id="f_model" value="${escAttr(i.model)}" required></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Size</label><input type="text" id="f_size" value="${escAttr(i.size)}"></div>
+        <div class="field"><label>Shoe Type</label><input type="text" id="f_shoeType" value="${escAttr(i.shoeType)}" placeholder="contoh: Running, Lifestyle, Football Boot"></div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Upper Material</legend>
+      <div class="row2">
+        <div class="field"><label>Toe box</label><input type="text" id="f_toebox" value="${escAttr(u.toebox)}"></div>
+        <div class="field"><label>Vamp</label><input type="text" id="f_vamp" value="${escAttr(u.vamp)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Quarter</label><input type="text" id="f_quarter" value="${escAttr(u.quarter)}"></div>
+        <div class="field"><label>Tongue</label><input type="text" id="f_tongue" value="${escAttr(u.tongue)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Lining</label><input type="text" id="f_lining" value="${escAttr(u.lining)}"></div>
+        <div class="field"><label>Reinforcement</label><input type="text" id="f_reinforcement" value="${escAttr(u.reinforcement)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>Gusseted?</label>
+          <select id="f_gusseted">${selectOptions(GUSSET_OPTIONS, u.gusseted)}</select>
+        </div>
+        <div class="field"><label>Padding</label>
+          <select id="f_padding">${selectOptions(PADDING_OPTIONS, u.padding)}</select>
+        </div>
+      </div>
+      <div class="field"><label>Upper Thickness</label><input type="text" id="f_thickness" value="${escAttr(u.thickness)}" placeholder="contoh: 1.2mm"></div>
+
+      <label style="margin-top:8px;">Abrasion Test</label>
+      ${abrasionBlock('f_ab1', 'Upper Material 1', ab && ab.material1)}
+      ${abrasionBlock('f_ab2', 'Upper Material 2', ab && ab.material2)}
+      ${abrasionBlock('f_ab3', 'Upper Material 3', ab && ab.material3)}
+      ${abrasionBlock('f_ablining', 'Lining', ab && ab.lining)}
+    </fieldset>
+
+    <div class="actions">
+      <button type="button" class="btn secondary" onclick="go('list')">Batal</button>
+      <button type="submit" class="btn">${editing ? 'Simpan Perubahan' : 'Simpan Sepatu'}</button>
+    </div>
+  </form>`;
+}
+
+async function saveForm(e, id){
+  e.preventDefault();
+  const val = (sel) => document.getElementById(sel).value.trim();
+  const submitBtn = e.target.querySelector('button[type=submit]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Menyimpan...';
+
+  const existing = id ? (await getData()).find(d=>d.id===id) : null;
+
+  const newItem = {
+    id: id || uid(),
+    createdAt: existing ? existing.createdAt : Date.now(),
+    identify: {
+      brand: val('f_brand'),
+      model: val('f_model'),
+      size: val('f_size'),
+      shoeType: val('f_shoeType'),
+    },
+    upper: {
+      toebox: val('f_toebox'),
+      vamp: val('f_vamp'),
+      quarter: val('f_quarter'),
+      tongue: val('f_tongue'),
+      lining: val('f_lining'),
+      reinforcement: val('f_reinforcement'),
+      gusseted: val('f_gusseted'),
+      padding: val('f_padding'),
+      thickness: val('f_thickness'),
+      abrasion: {
+        material1: { rating: val('f_ab1_rating'), note: val('f_ab1_note') },
+        material2: { rating: val('f_ab2_rating'), note: val('f_ab2_note') },
+        material3: { rating: val('f_ab3_rating'), note: val('f_ab3_note') },
+        lining: { rating: val('f_ablining_rating'), note: val('f_ablining_note') },
+      }
+    }
+  };
+
+  try{
+    await apiPost({ action: id ? 'update' : 'create', item: newItem });
+    cachedData = null; // invalidate cache so next load is fresh from sheet
+    go('detail', newItem.id);
+  } catch(err){
+    alert('Gagal simpan ke Google Sheets: ' + err.message);
+    submitBtn.disabled = false;
+    submitBtn.textContent = id ? 'Simpan Perubahan' : 'Simpan Sepatu';
+  }
+  return false;
+}
+
+// ---------------- DETAIL ----------------
+function renderDetail(d, id){
+  if(!d) return `<div class="empty"><h2>Data nggak ketemu.</h2><button class="btn" onclick="go('list')">Balik ke List</button></div>`;
+
+  const i = d.identify, u = d.upper, ab = u.abrasion || {};
+
+  const abRow = (label, obj) => obj ? `
+    <div class="k">${label}</div>
+    <div><span class="badge-rating badge-${obj.rating}">${obj.rating || '-'}</span> ${obj.note ? '— ' + esc(obj.note) : ''}</div>
+  ` : '';
+
+  return `
+  <div class="actions" style="justify-content:space-between; margin-bottom:16px;">
+    <button class="btn secondary" onclick="go('list')">← Balik</button>
+    <div class="actions">
+      <button class="btn secondary" onclick="go('form','${d.id}')">✏️ Edit</button>
+      <button class="btn danger" onclick="deleteItem('${d.id}')">🗑️ Hapus</button>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <h2>Identify</h2>
+    <div class="kv">
+      <div class="k">Brand</div><div>${esc(i.brand)}</div>
+      <div class="k">Model</div><div>${esc(i.model)}</div>
+      <div class="k">Size</div><div>${esc(i.size) || '-'}</div>
+      <div class="k">Shoe Type</div><div>${esc(i.shoeType) || '-'}</div>
+    </div>
+  </div>
+
+  <div class="detail-section">
+    <h2>Upper Material</h2>
+    <div class="kv">
+      <div class="k">Toe box</div><div>${esc(u.toebox) || '-'}</div>
+      <div class="k">Vamp</div><div>${esc(u.vamp) || '-'}</div>
+      <div class="k">Quarter</div><div>${esc(u.quarter) || '-'}</div>
+      <div class="k">Tongue</div><div>${esc(u.tongue) || '-'}</div>
+      <div class="k">Lining</div><div>${esc(u.lining) || '-'}</div>
+      <div class="k">Reinforcement</div><div>${esc(u.reinforcement) || '-'}</div>
+      <div class="k">Gusseted?</div><div>${esc(u.gusseted) || '-'}</div>
+      <div class="k">Padding</div><div>${esc(u.padding) || '-'}</div>
+      <div class="k">Upper Thickness</div><div>${esc(u.thickness) || '-'}</div>
+      ${abRow('Abrasion — Upper Material 1', ab.material1)}
+      ${abRow('Abrasion — Upper Material 2', ab.material2)}
+      ${abRow('Abrasion — Upper Material 3', ab.material3)}
+      ${abRow('Abrasion — Lining', ab.lining)}
+    </div>
+  </div>
+  `;
+}
+
+async function deleteItem(id){
+  if(!confirm('Yakin hapus data sepatu ini?')) return;
+  try{
+    await apiPost({ action: 'delete', id: id });
+    cachedData = null;
+    go('list');
+  } catch(err){
+    alert('Gagal hapus: ' + err.message);
+  }
+}
+
+// ---------------- IMPORT / EXPORT ----------------
+async function exportData(){
+  try{
+    const data = await getData(true);
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'shoepolice-teardown-' + Date.now() + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch(err){
+    alert('Gagal export: ' + err.message);
+  }
+}
+
+async function importData(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async function(ev){
+    try{
+      const imported = JSON.parse(ev.target.result);
+      if(!Array.isArray(imported)) throw new Error('Format salah');
+      if(!confirm(`Import ${imported.length} data ke Google Sheets?`)) return;
+      for(const item of imported){
+        await apiPost({ action: 'create', item: item });
+      }
+      cachedData = null;
+      alert('Import berhasil! ' + imported.length + ' data diproses.');
+      go('list');
+    } catch(err){
+      alert('Gagal import: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ---------------- UTIL ----------------
+function esc(str){
+  if(str === undefined || str === null) return '';
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escAttr(str){ return esc(str); }
+</script>
+</body>
+</html>
