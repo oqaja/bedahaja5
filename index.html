@@ -6,122 +6,172 @@
 <title>Shoe Police Teardown DB</title>
 <style>
   :root{
-    --bg:#0f0f10; --bg2:#181819; --card:#1e1e20; --line:#2c2c2f;
-    --text:#f2f2f0; --muted:#9a9a9e; --accent:#ffb800; --accent2:#ff5a36;
-    --radius:10px;
+    --bg:#0b0b0c; --bg2:#121214; --card:#1a1a1c; --line:#262629;
+    --text:#f8f9fa; --muted:#8e8e93; --accent:#ffb800; --accent2:#ff453a;
+    --radius:12px;
   }
   *{box-sizing:border-box;}
   body{
-    margin:0; font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
-    background:var(--bg); color:var(--text); min-height:100vh;
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--text); min-height:100vh; -webkit-font-smoothing: antialiased;
   }
   header{
-    padding:18px 20px; background:var(--bg2); border-bottom:1px solid var(--line);
-    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;
-    position:sticky; top:0; z-index:10;
+    padding:16px 24px; background:var(--bg2); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;
+    position:sticky; top:0; z-index:10; backdrop-filter: blur(8px);
   }
-  header h1{font-size:18px; margin:0; letter-spacing:0.5px;}
+  header h1{font-size:20px; margin:0; letter-spacing:0.5px; font-weight: 800;}
   header h1 span{color:var(--accent);}
-  nav{display:flex; gap:8px; flex-wrap:wrap;}
+  
+  .nav-group{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
   nav button, .btn{
-    background:var(--accent); color:#111; border:none; padding:9px 16px;
+    background:var(--accent); color:#111; border:none; padding:10px 18px;
     border-radius:var(--radius); font-weight:600; cursor:pointer; font-size:14px;
+    transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px;
   }
-  nav button.secondary, .btn.secondary{background:transparent; color:var(--text); border:1px solid var(--line);}
+  nav button:hover, .btn:hover{ opacity: 0.9; transform: translateY(-1px); }
+  nav button.secondary, .btn.secondary{background:var(--card); color:var(--text); border:1px solid var(--line);}
   nav button.danger, .btn.danger{background:var(--accent2); color:#fff;}
-  main{padding:20px; max-width:1100px; margin:0 auto;}
-  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
+  
+  .role-indicator {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; padding: 4px 10px; 
+    border-radius: 20px; letter-spacing: 1px; cursor: pointer;
+  }
+  .role-admin { background: rgba(255,184,0,0.15); color: var(--accent); border: 1px solid var(--accent); }
+  .role-viewer { background: rgba(142,142,147,0.15); color: var(--muted); border: 1px solid var(--line); }
+
+  main{padding:24px; max-width:1200px; margin:0 auto;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px;}
+  
   .card{
     background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
-    padding:14px; cursor:pointer; transition:.15s;
+    padding:18px; cursor:pointer; transition:all 0.2s ease; position:relative;
   }
-  .card:hover{border-color:var(--accent);}
-  .card h3{margin:0 0 4px; font-size:16px;}
-  .card p{margin:2px 0; font-size:13px; color:var(--muted);}
+  .card:hover{border-color:var(--accent); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.3);}
+  .card h3{margin:0 0 6px; font-size:17px; font-weight: 700; line-height: 1.3;}
+  .card p{margin:4px 0; font-size:13px; color:var(--muted);}
   .tag{
-    display:inline-block; background:var(--bg2); border:1px solid var(--line);
-    padding:2px 8px; border-radius:20px; font-size:11px; color:var(--accent); margin-top:6px;
+    display:inline-block; background:rgba(255,184,0,0.1); border:1px solid rgba(255,184,0,0.2);
+    padding:4px 10px; border-radius:20px; font-size:11px; color:var(--accent); margin-top:10px; font-weight: 600;
   }
-  .empty{color:var(--muted); text-align:center; padding:60px 20px;}
-  .card{position:relative;}
-  .card .ck{
-    position:absolute; top:10px; right:10px; width:20px; height:20px; z-index:2; cursor:pointer;
-  }
+  
+  .ck{position:absolute; top:18px; right:18px; width:18px; height:18px; z-index:2; cursor:pointer;}
+  
   .compare-bar{
-    position:fixed; bottom:0; left:0; right:0; background:var(--bg2); border-top:1px solid var(--accent);
-    padding:12px 20px; display:flex; align-items:center; justify-content:center; gap:14px; z-index:20;
+    position:fixed; bottom:24px; left:50%; transform: translateX(-50%); background:var(--bg2); 
+    border:1px solid var(--line); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    padding:12px 24px; border-radius: 30px; display:flex; align-items:center; gap:16px; z-index:20;
   }
-  table.compare-table{width:100%; border-collapse:collapse; font-size:13px;}
-  table.compare-table th, table.compare-table td{
-    border:1px solid var(--line); padding:8px 10px; text-align:left; vertical-align:top;
-  }
-  table.compare-table th{background:var(--bg2); color:var(--accent); position:sticky; top:60px;}
-  table.compare-table td.label-col, table.compare-table th.label-col{
-    background:var(--card); color:var(--muted); font-weight:600; white-space:nowrap; position:sticky; left:0;
-  }
-  table.compare-table tr.section-row td{background:var(--bg2); color:var(--accent); font-weight:700; font-size:12px; letter-spacing:0.5px; text-transform:uppercase;}
-  .table-scroll{overflow-x:auto; padding-bottom:80px;}
-  form{display:flex; flex-direction:column; gap:14px;}
-  fieldset{border:1px solid var(--line); border-radius:var(--radius); padding:16px; background:var(--card);}
-  legend{padding:0 8px; font-weight:700; color:var(--accent); font-size:15px;}
-  label{display:block; font-size:13px; color:var(--muted); margin-bottom:4px;}
-  input[type=text], input[type=number], select, textarea{
-    width:100%; padding:9px 10px; background:var(--bg); border:1px solid var(--line);
-    border-radius:8px; color:var(--text); font-size:14px;
-  }
-  textarea{resize:vertical; min-height:50px;}
-  .field{margin-bottom:10px;}
-  .row2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  .abrasion-block{
-    border:1px dashed var(--line); border-radius:8px; padding:10px; margin-bottom:10px; background:var(--bg2);
-  }
+  
+  table.compare-table{width:100%; border-collapse:collapse; font-size:14px; background: var(--card); border-radius: var(--radius); overflow: hidden;}
+  table.compare-table th, table.compare-table td{ border:1px solid var(--line); padding:12px 16px; text-align:left; vertical-align:top; }
+  table.compare-table th{background:var(--bg2); color:var(--accent); font-weight: 700;}
+  table.compare-table td.label-col{ background:var(--bg2); color:var(--muted); font-weight:600; white-space:nowrap; }
+  table.compare-table tr.section-row td{background:rgba(255,184,0,0.05); color:var(--accent); font-weight:700; font-size:12px; letter-spacing:1px; text-transform:uppercase;}
+  .table-scroll{overflow-x:auto; border-radius: var(--radius); border: 1px solid var(--line); margin-top: 16px;}
+  
+  form{display:flex; flex-direction:column; gap:16px;}
+  fieldset{border:1px solid var(--line); border-radius:var(--radius); padding:20px; background:var(--card);}
+  legend{padding:0 10px; font-weight:700; color:var(--accent); font-size:16px;}
+  label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px; font-weight: 500;}
+  input[type=text], select{ width:100%; padding:10px 12px; background:var(--bg); border:1px solid var(--line); border-radius:8px; color:var(--text); font-size:14px; transition: border 0.2s; }
+  input[type=text]:focus, select:focus{ border-color: var(--accent); outline: none; }
+  
+  .field{margin-bottom:12px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .abrasion-block{ border:1px dashed var(--line); border-radius:8px; padding:12px; margin-bottom:12px; background:var(--bg2); }
   .abrasion-block .row2{grid-template-columns:1fr 2fr;}
-  .actions{display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;}
-  .detail-section{margin-bottom:18px;}
-  .detail-section h2{font-size:15px; color:var(--accent); border-bottom:1px solid var(--line); padding-bottom:6px;}
-  .kv{display:grid; grid-template-columns:200px 1fr; gap:6px 14px; font-size:14px;}
-  .kv div.k{color:var(--muted);}
-  .badge-rating{font-weight:700;}
-  .badge-Poor{color:var(--accent2);}
-  .badge-Fair{color:#e0c419;}
-  .badge-Good{color:#7ed957;}
-  .badge-Excelent{color:#3ddc84;}
-  footer{text-align:center; padding:30px 10px; color:var(--muted); font-size:12px;}
-  .hidden{display:none;}
+  .actions{display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap;}
+  
+  .detail-container { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  .detail-section{ background: var(--card); border: 1px solid var(--line); padding: 20px; border-radius: var(--radius); }
+  .detail-section h2{font-size:16px; color:var(--accent); margin: 0 0 16px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
+  .kv{display:grid; grid-template-columns:180px 1fr; gap:12px 16px; font-size:14px;}
+  .kv div.k{color:var(--muted); font-weight: 500;}
+  
+  .badge-rating{font-weight:700; padding: 2px 6px; border-radius: 4px; font-size: 12px; background: rgba(255,255,255,0.05);}
+  .badge-Poor{color:var(--accent2); background: rgba(255, 69, 58, 0.1);}
+  .badge-Fair{color:#e0c419; background: rgba(224, 196, 25, 0.1);}
+  .badge-Good{color:#7ed957; background: rgba(126, 217, 87, 0.1);}
+  .badge-Excelent{color:#3ddc84; background: rgba(61, 220, 132, 0.1);}
+  
+  .empty{color:var(--muted); text-align:center; padding:80px 20px;}
+  footer{text-align:center; padding:40px 10px; color:var(--muted); font-size:12px; border-top: 1px solid var(--line); margin-top: 40px;}
+  
+  /* Helper class untuk menyembunyikan elemen admin */
+  .admin-only { display: none !important; }
+  body.admin-mode .admin-only { display: inline-flex !important; }
+  body.admin-mode .admin-only.flex-block { display: block !important; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>Shoe<span>Police</span> // Teardown DB</h1>
-  <nav>
-    <button class="secondary" onclick="go('list')">📋 List</button>
-    <button onclick="go('form')">➕ Tambah Sepatu</button>
-    <button class="secondary" onclick="exportData()">⬇️ Export JSON</button>
-    <label class="btn secondary" style="margin:0;">
-      ⬆️ Import JSON
-      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
-    </label>
-    <button class="secondary" onclick="go('settings')">⚙️</button>
-  </nav>
+  <div class="nav-group">
+    <nav>
+      <button class="secondary" onclick="go('list')">📋 List Sepatu</button>
+      <button class="admin-only" onclick="go('form')">➕ Tambah Hasil Bedah</button>
+      <button class="secondary admin-only" onclick="exportData()">⬇️ Export</button>
+      <label class="btn secondary admin-only" style="margin:0;">
+        ⬆️ Import
+        <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+      </label>
+      <button class="secondary admin-only" onclick="go('settings')">⚙️</button>
+    </nav>
+    <div id="roleIndicator" class="role-indicator role-viewer" onclick="toggleRole()">👁️ Viewer Mode</div>
+  </div>
 </header>
 
 <main id="app"></main>
 
-<footer>Shoe Police Teardown DB — data tersimpan lokal di browser ini.</footer>
+<footer>Shoe Police Teardown DB — Data terhubung live dengan Google Sheets.</footer>
 
 <script>
-// Default Script URL — udah diisi otomatis, user nggak perlu setting manual lagi.
-// Kalau nanti pindah Sheets/redeploy, ganti string di bawah ini.
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyCKQ6Sai2qbn77CS5JtRVnr9-C6OMq_dUAZI-OnIJgqwOoKERRPovaqjwaItbWab7X/exec';
-
 const SCRIPT_URL_KEY = 'sp_script_url';
-let cachedData = null; // in-memory cache of shoes fetched from Google Sheets
+const ROLE_KEY = 'sp_user_role'; // Menyimpan status admin/viewer di browser
+
+let cachedData = null;
+// Default mode adalah 'viewer'. Ubah ke 'admin' lewat tombol/indikator di kanan atas.
+let currentRole = localStorage.getItem(ROLE_KEY) || 'viewer'; 
 
 function getScriptUrl(){ return localStorage.getItem(SCRIPT_URL_KEY) || DEFAULT_SCRIPT_URL; }
 function setScriptUrl(url){ localStorage.setItem(SCRIPT_URL_KEY, url.trim()); }
-
 function uid(){ return 'sh_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+
+// Fungsi ganti Role (Bisa di-klik pemilik untuk masuk mode editing)
+function updateRoleUI() {
+  const body = document.body;
+  const indicator = document.getElementById('roleIndicator');
+  if (currentRole === 'admin') {
+    body.classList.add('admin-mode');
+    indicator.className = 'role-indicator role-admin';
+    indicator.innerHTML = '⚡ Admin Mode';
+  } else {
+    body.classList.remove('admin-mode');
+    indicator.className = 'role-indicator role-viewer';
+    indicator.innerHTML = '👁️ Viewer Mode';
+  }
+}
+
+function toggleRole() {
+  if (currentRole === 'viewer') {
+    // Opsional: Lo bisa kasih prompt password sederhana di sini biar penonton iseng gak bisa masuk
+    const pass = prompt("Masukkan PIN Pemilik untuk masuk Mode Admin (kosongkan jika belum setup):");
+    if (pass === "1234" || pass === "") { // Ganti "1234" sesuai keinginan lo, atau hapus validasinya
+      currentRole = 'admin';
+    } else {
+      alert("PIN Salah!"); return;
+    }
+  } else {
+    currentRole = 'viewer';
+  }
+  localStorage.setItem(ROLE_KEY, currentRole);
+  updateRoleUI();
+  // Re-render view sekarang biar tombol-tombol menyesuaikan hak akses
+  handleHash(); 
+}
 
 async function apiGet(){
   const url = getScriptUrl();
@@ -135,7 +185,6 @@ async function apiGet(){
 async function apiPost(payload){
   const url = getScriptUrl();
   if(!url) throw new Error('NO_URL');
-  // text/plain content-type avoids CORS preflight issues with Apps Script web apps
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -163,13 +212,14 @@ function selectOptions(options, selected){
 // ---------------- ROUTER ----------------
 async function route(view, id){
   const app = document.getElementById('app');
+  updateRoleUI();
 
   if(!getScriptUrl() && view !== 'settings'){
     app.innerHTML = renderSettingsPrompt();
     return;
   }
 
-  app.innerHTML = '<div class="empty">⏳ Memuat data dari Google Sheets...</div>';
+  app.innerHTML = '<div class="empty">⏳ Memuat database bedah sepatu...</div>';
   try{
     if(view === 'list') app.innerHTML = renderList(await getData());
     else if(view === 'form') app.innerHTML = renderForm(id, id ? (await getData()).find(d=>d.id===id) : null);
@@ -185,16 +235,16 @@ async function route(view, id){
     app.innerHTML = `<div class="empty">
       <h2>⚠️ Gagal konek ke Google Sheets</h2>
       <p>${esc(err.message)}</p>
-      <p>Cek lagi Script URL-nya di tombol ⚙️ Settings.</p>
-      <button class="btn" onclick="go('settings')">⚙️ Buka Settings</button>
+      <p class="admin-only">Cek lagi Script URL-nya di tombol ⚙️ Settings.</p>
+      <button class="btn admin-only" onclick="go('settings')">⚙️ Buka Settings</button>
     </div>`;
   }
 }
 
 function renderSettingsPrompt(){
   return `<div class="empty">
-    <h2>👋 Setup dulu, bro</h2>
-    <p>Web ini butuh URL Apps Script biar bisa connect ke Google Sheets lo.</p>
+    <h2>👋 Setup Database</h2>
+    <p>Web ini butuh URL Apps Script biar bisa connect ke Google Sheets.</p>
     <button class="btn" onclick="go('settings')">⚙️ Masukin Script URL</button>
   </div>`;
 }
@@ -208,10 +258,6 @@ function renderSettings(){
       <label>Google Apps Script Web App URL</label>
       <input type="text" id="settingsUrl" value="${escAttr(url)}" placeholder="https://script.google.com/macros/s/xxxxx/exec">
     </div>
-    <p style="color:var(--muted); font-size:13px;">
-      Dapetin URL ini dari Apps Script: Deploy > New deployment > Web app > copy URL-nya.
-      Liat panduan lengkap di README.
-    </p>
     <div class="actions">
       <button class="btn secondary" onclick="go('list')">Batal</button>
       <button class="btn" onclick="saveSettings()">Simpan & Coba Konek</button>
@@ -221,7 +267,7 @@ function renderSettings(){
 
 function saveSettings(){
   const url = document.getElementById('settingsUrl').value.trim();
-  if(!url){ alert('URL nggak boleh kosong, bro.'); return; }
+  if(!url){ alert('URL tidak boleh kosong'); return; }
   setScriptUrl(url);
   cachedData = null;
   go('list');
@@ -247,16 +293,14 @@ function go(view, id){
   else if(view==='settings') location.hash = 'settings';
   else location.hash = '';
 }
-document.addEventListener('DOMContentLoaded', () => {
-  handleHash();
-});
+document.addEventListener('DOMContentLoaded', handleHash);
 
 // ---------------- LIST ----------------
 function renderList(data){
   if(data.length === 0){
     return `<div class="empty">
       <h2>Belum ada sepatu yang dibedah 👟</h2>
-      <p>Klik "Tambah Sepatu" buat mulai isi data teardown pertama.</p>
+      <p class="admin-only">Klik "Tambah Hasil Bedah" buat mulai isi data teardown pertama.</p>
     </div>`;
   }
   const cards = data.map(d => `
@@ -266,20 +310,21 @@ function renderList(data){
         onclick="event.stopPropagation(); toggleSelect('${d.id}')">
       <h3>${esc(d.identify.brand)} ${esc(d.identify.model)}</h3>
       <p>Size: ${esc(d.identify.size) || '-'}</p>
-      <p>Type: ${esc(d.identify.shoeType) || '-'}</p>
       <span class="tag">${esc(d.identify.shoeType) || 'Unknown'}</span>
     </div>
   `).join('');
+  
   const bar = selectedIds.size >= 2 ? `
     <div class="compare-bar">
-      <span>${selectedIds.size} sepatu dipilih</span>
-      <button class="btn" onclick="go('compare', Array.from(selectedIds).join(','))">⚖️ Compare</button>
+      <span style="font-size:14px; font-weight:600;">⚖️ ${selectedIds.size} Sepatu Terpilih</span>
+      <button class="btn" onclick="go('compare', Array.from(selectedIds).join(','))">Bandingkan</button>
       <button class="btn secondary" onclick="clearSelect()">Batal</button>
     </div>` : (selectedIds.size === 1 ? `
     <div class="compare-bar">
-      <span>Pilih minimal 1 sepatu lagi buat compare</span>
+      <span style="font-size:13px; color:var(--muted)">Pilih 1 sepatu lagi untuk membandingkan</span>
       <button class="btn secondary" onclick="clearSelect()">Batal</button>
     </div>` : '');
+    
   return `<div class="grid">${cards}</div>${bar}`;
 }
 
@@ -294,7 +339,7 @@ function clearSelect(){
   route('list');
 }
 
-// ---------------- FORM ----------------
+// ---------------- FORM (ADMIN ONLY IN SPIRIT) ----------------
 function abrasionBlock(prefix, label, val){
   val = val || {};
   return `
@@ -302,12 +347,15 @@ function abrasionBlock(prefix, label, val){
     <label>${label}</label>
     <div class="row2">
       <select id="${prefix}_rating">${selectOptions(RATING_OPTIONS, val.rating)}</select>
-      <input type="text" id="${prefix}_note" placeholder="Keterangan" value="${escAttr(val.note)}">
+      <input type="text" id="${prefix}_note" placeholder="Keterangan uji gosok" value="${escAttr(val.note)}">
     </div>
   </div>`;
 }
 
 function renderForm(id, item){
+  // Proteksi client-side sederhana jika viewer coba-coba ketik #form
+  if(currentRole !== 'admin') { return `<div class="empty"><h2>🔒 Akses Ditolak</h2><p>Hanya pemilik yang bisa menambah/mengubah data.</p><button class="btn" onclick="go('list')">Kembali ke List</button></div>`; }
+  
   const editing = !!id;
   const i = item ? item.identify : {};
   const u = item ? item.upper : {};
@@ -316,51 +364,51 @@ function renderForm(id, item){
   return `
   <form id="shoeForm" onsubmit="return saveForm(event,'${id||''}')">
     <fieldset>
-      <legend>Identify</legend>
+      <legend>Identification</legend>
       <div class="row2">
-        <div class="field"><label>Brand</label><input type="text" id="f_brand" value="${escAttr(i.brand)}" required></div>
-        <div class="field"><label>Model</label><input type="text" id="f_model" value="${escAttr(i.model)}" required></div>
+        <div class="field"><label>Brand/Merk</label><input type="text" id="f_brand" value="${escAttr(i.brand)}" required></div>
+        <div class="field"><label>Nama Model</label><input type="text" id="f_model" value="${escAttr(i.model)}" required></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Size</label><input type="text" id="f_size" value="${escAttr(i.size)}"></div>
-        <div class="field"><label>Shoe Type</label><input type="text" id="f_shoeType" value="${escAttr(i.shoeType)}" placeholder="contoh: Running, Lifestyle, Football Boot"></div>
+        <div class="field"><label>Size Sample</label><input type="text" id="f_size" value="${escAttr(i.size)}"></div>
+        <div class="field"><label>Jenis Sepatu</label><input type="text" id="f_shoeType" value="${escAttr(i.shoeType)}" placeholder="Contoh: Running, Basketball, Casual"></div>
       </div>
     </fieldset>
 
     <fieldset>
-      <legend>Upper Material</legend>
+      <legend>Anatomi & Material Upper</legend>
       <div class="row2">
         <div class="field"><label>Toe box</label><input type="text" id="f_toebox" value="${escAttr(u.toebox)}"></div>
         <div class="field"><label>Vamp</label><input type="text" id="f_vamp" value="${escAttr(u.vamp)}"></div>
       </div>
       <div class="row2">
         <div class="field"><label>Quarter</label><input type="text" id="f_quarter" value="${escAttr(u.quarter)}"></div>
-        <div class="field"><label>Tongue</label><input type="text" id="f_tongue" value="${escAttr(u.tongue)}"></div>
+        <div class="field"><label>Tongue (Lidah)</label><input type="text" id="f_tongue" value="${escAttr(u.tongue)}"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Lining</label><input type="text" id="f_lining" value="${escAttr(u.lining)}"></div>
+        <div class="field"><label>Lining (Inner)</label><input type="text" id="f_lining" value="${escAttr(u.lining)}"></div>
         <div class="field"><label>Reinforcement</label><input type="text" id="f_reinforcement" value="${escAttr(u.reinforcement)}"></div>
       </div>
       <div class="row2">
-        <div class="field"><label>Gusseted?</label>
+        <div class="field"><label>Gusseted Status</label>
           <select id="f_gusseted">${selectOptions(GUSSET_OPTIONS, u.gusseted)}</select>
         </div>
-        <div class="field"><label>Padding</label>
+        <div class="field"><label>Padding Lidah</label>
           <select id="f_padding">${selectOptions(PADDING_OPTIONS, u.padding)}</select>
         </div>
       </div>
-      <div class="field"><label>Upper Thickness</label><input type="text" id="f_thickness" value="${escAttr(u.thickness)}" placeholder="contoh: 1.2mm"></div>
+      <div class="field"><label>Ketebalan Material Upper (mm)</label><input type="text" id="f_thickness" value="${escAttr(u.thickness)}" placeholder="Contoh: 1.5 mm"></div>
 
-      <label style="margin-top:8px;">Abrasion Test</label>
-      ${abrasionBlock('f_ab1', 'Upper Material 1', ab && ab.material1)}
-      ${abrasionBlock('f_ab2', 'Upper Material 2', ab && ab.material2)}
-      ${abrasionBlock('f_ab3', 'Upper Material 3', ab && ab.material3)}
-      ${abrasionBlock('f_ablining', 'Lining', ab && ab.lining)}
+      <label style="margin:16px 0 8px; font-weight:700; color:var(--accent)">Hasil Abrasion (Uji Gosok Dremel)</label>
+      ${abrasionBlock('f_ab1', 'Material Upper Layer 1', ab && ab.material1)}
+      ${abrasionBlock('f_ab2', 'Material Upper Layer 2', ab && ab.material2)}
+      ${abrasionBlock('f_ab3', 'Material Upper Layer 3', ab && ab.material3)}
+      ${abrasionBlock('f_ablining', 'Lining / Bagian Dalam', ab && ab.lining)}
     </fieldset>
 
     <div class="actions">
       <button type="button" class="btn secondary" onclick="go('list')">Batal</button>
-      <button type="submit" class="btn">${editing ? 'Simpan Perubahan' : 'Simpan Sepatu'}</button>
+      <button type="submit" class="btn">${editing ? 'Simpan Perubahan' : 'Publish Hasil Bedah'}</button>
     </div>
   </form>`;
 }
@@ -370,29 +418,18 @@ async function saveForm(e, id){
   const val = (sel) => document.getElementById(sel).value.trim();
   const submitBtn = e.target.querySelector('button[type=submit]');
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Menyimpan...';
+  submitBtn.textContent = 'Mengirim data ke Sheets...';
 
   const existing = id ? (await getData()).find(d=>d.id===id) : null;
 
   const newItem = {
     id: id || uid(),
     createdAt: existing ? existing.createdAt : Date.now(),
-    identify: {
-      brand: val('f_brand'),
-      model: val('f_model'),
-      size: val('f_size'),
-      shoeType: val('f_shoeType'),
-    },
+    identify: { brand: val('f_brand'), model: val('f_model'), size: val('f_size'), shoeType: val('f_shoeType') },
     upper: {
-      toebox: val('f_toebox'),
-      vamp: val('f_vamp'),
-      quarter: val('f_quarter'),
-      tongue: val('f_tongue'),
-      lining: val('f_lining'),
-      reinforcement: val('f_reinforcement'),
-      gusseted: val('f_gusseted'),
-      padding: val('f_padding'),
-      thickness: val('f_thickness'),
+      toebox: val('f_toebox'), vamp: val('f_vamp'), quarter: val('f_quarter'), tongue: val('f_tongue'),
+      lining: val('f_lining'), reinforcement: val('f_reinforcement'), gusseted: val('f_gusseted'),
+      padding: val('f_padding'), thickness: val('f_thickness'),
       abrasion: {
         material1: { rating: val('f_ab1_rating'), note: val('f_ab1_note') },
         material2: { rating: val('f_ab2_rating'), note: val('f_ab2_note') },
@@ -404,101 +441,107 @@ async function saveForm(e, id){
 
   try{
     await apiPost({ action: id ? 'update' : 'create', item: newItem });
-    cachedData = null; // invalidate cache so next load is fresh from sheet
+    cachedData = null;
     go('detail', newItem.id);
   } catch(err){
     alert('Gagal simpan ke Google Sheets: ' + err.message);
     submitBtn.disabled = false;
-    submitBtn.textContent = id ? 'Simpan Perubahan' : 'Simpan Sepatu';
+    submitBtn.textContent = id ? 'Simpan Perubahan' : 'Publish Hasil Bedah';
   }
   return false;
 }
 
 // ---------------- DETAIL ----------------
 function renderDetail(d, id){
-  if(!d) return `<div class="empty"><h2>Data nggak ketemu.</h2><button class="btn" onclick="go('list')">Balik ke List</button></div>`;
+  if(!d) return `<div class="empty"><h2>Data tidak ditemukan.</h2><button class="btn" onclick="go('list')">Kembali</button></div>`;
 
   const i = d.identify, u = d.upper, ab = u.abrasion || {};
-
-  const abRow = (label, obj) => obj ? `
+  const abRow = (label, obj) => obj && obj.rating ? `
     <div class="k">${label}</div>
-    <div><span class="badge-rating badge-${obj.rating}">${obj.rating || '-'}</span> ${obj.note ? '— ' + esc(obj.note) : ''}</div>
+    <div><span class="badge-rating badge-${obj.rating}">${obj.rating}</span> ${obj.note ? '— ' + esc(obj.note) : ''}</div>
   ` : '';
 
   return `
-  <div class="actions" style="justify-content:space-between; margin-bottom:16px;">
-    <button class="btn secondary" onclick="go('list')">← Balik</button>
-    <div class="actions">
+  <div class="actions" style="justify-content:space-between; margin-bottom:20px;">
+    <button class="btn secondary" onclick="go('list')">← Kembali ke List</button>
+    <div class="actions admin-only">
       <button class="btn secondary" onclick="go('form','${d.id}')">✏️ Edit</button>
       <button class="btn danger" onclick="deleteItem('${d.id}')">🗑️ Hapus</button>
     </div>
   </div>
 
-  <div class="detail-section">
-    <h2>Identify</h2>
-    <div class="kv">
-      <div class="k">Brand</div><div>${esc(i.brand)}</div>
-      <div class="k">Model</div><div>${esc(i.model)}</div>
-      <div class="k">Size</div><div>${esc(i.size) || '-'}</div>
-      <div class="k">Shoe Type</div><div>${esc(i.shoeType) || '-'}</div>
+  <div class="detail-container">
+    <div class="detail-section">
+      <h2>Spesifikasi Dasar (Identify)</h2>
+      <div class="kv">
+        <div class="k">Brand</div><div><strong>${esc(i.brand)}</strong></div>
+        <div class="k">Model</div><div>${esc(i.model)}</div>
+        <div class="k">Size Kaki Dibedah</div><div>${esc(i.size) || '-'}</div>
+        <div class="k">Kategori Sepatu</div><div>${esc(i.shoeType) || '-'}</div>
+      </div>
     </div>
-  </div>
 
-  <div class="detail-section">
-    <h2>Upper Material</h2>
-    <div class="kv">
-      <div class="k">Toe box</div><div>${esc(u.toebox) || '-'}</div>
-      <div class="k">Vamp</div><div>${esc(u.vamp) || '-'}</div>
-      <div class="k">Quarter</div><div>${esc(u.quarter) || '-'}</div>
-      <div class="k">Tongue</div><div>${esc(u.tongue) || '-'}</div>
-      <div class="k">Lining</div><div>${esc(u.lining) || '-'}</div>
-      <div class="k">Reinforcement</div><div>${esc(u.reinforcement) || '-'}</div>
-      <div class="k">Gusseted?</div><div>${esc(u.gusseted) || '-'}</div>
-      <div class="k">Padding</div><div>${esc(u.padding) || '-'}</div>
-      <div class="k">Upper Thickness</div><div>${esc(u.thickness) || '-'}</div>
-      ${abRow('Abrasion — Upper Material 1', ab.material1)}
-      ${abRow('Abrasion — Upper Material 2', ab.material2)}
-      ${abRow('Abrasion — Upper Material 3', ab.material3)}
-      ${abRow('Abrasion — Lining', ab.lining)}
+    <div class="detail-section">
+      <h2>Material Teardown (Upper)</h2>
+      <div class="kv">
+        <div class="k">Toe box</div><div>${esc(u.toebox) || '-'}</div>
+        <div class="k">Vamp</div><div>${esc(u.vamp) || '-'}</div>
+        <div class="k">Quarter</div><div>${esc(u.quarter) || '-'}</div>
+        <div class="k">Tongue</div><div>${esc(u.tongue) || '-'}</div>
+        <div class="k">Lining Inside</div><div>${esc(u.lining) || '-'}</div>
+        <div class="k">Reinforcement</div><div>${esc(u.reinforcement) || '-'}</div>
+        <div class="k">Konstruksi Lidah</div><div>${esc(u.gusseted) || '-'}</div>
+        <div class="k">Bantalan (Padding)</div><div>${esc(u.padding) || '-'}</div>
+        <div class="k">Ketebalan Upper</div><div>${esc(u.thickness) || '-'}</div>
+      </div>
     </div>
-  </div>
-  `;
+
+    <div class="detail-section">
+      <h2>Kekuatan Durabilitas (Abrasion Test)</h2>
+      <div class="kv">
+        ${abRow('Material Lapisan 1', ab.material1) || '<div>-</div><div>Belum diuji uji gosok</div>'}
+        ${abRow('Material Lapisan 2', ab.material2)}
+        ${abRow('Material Lapisan 3', ab.material3)}
+        ${abRow('Durabilitas Lining', ab.lining)}
+      </div>
+    </div>
+  </div>`;
 }
 
 // ---------------- COMPARE ----------------
 function renderCompare(items){
   if(items.length < 2){
-    return `<div class="empty"><h2>Pilih minimal 2 sepatu buat compare.</h2><button class="btn" onclick="go('list')">Balik ke List</button></div>`;
+    return `<div class="empty"><h2>Pilih minimal 2 sepatu di halaman depan untuk membandingkan.</h2><button class="btn" onclick="go('list')">Kembali</button></div>`;
   }
 
   const abCell = (obj) => {
     if(!obj || !obj.rating) return '-';
-    return `<span class="badge-rating badge-${obj.rating}">${obj.rating}</span>${obj.note ? ' — ' + esc(obj.note) : ''}`;
+    return `<span class="badge-rating badge-${obj.rating}">${obj.rating}</span>${obj.note ? '<br><small style="color:var(--muted)">' + esc(obj.note) + '</small>' : ''}`;
   };
 
-  const headerCols = items.map(d => `<th>${esc(d.identify.brand)}<br>${esc(d.identify.model)}</th>`).join('');
+  const headerCols = items.map(d => `<th>${esc(d.identify.brand)}<br><span style="font-size:12px;color:var(--muted)">${esc(d.identify.model)}</span></th>`).join('');
 
   const rows = [
-    { section: 'Identify' },
+    { section: 'Identifikasi' },
     { label: 'Brand', get: d => esc(d.identify.brand) },
     { label: 'Model', get: d => esc(d.identify.model) },
-    { label: 'Size', get: d => esc(d.identify.size) || '-' },
-    { label: 'Shoe Type', get: d => esc(d.identify.shoeType) || '-' },
-    { section: 'Upper Material' },
+    { label: 'Size Sample', get: d => esc(d.identify.size) || '-' },
+    { label: 'Kategori', get: d => esc(d.identify.shoeType) || '-' },
+    { section: 'Hasil Bedah Upper' },
     { label: 'Toe box', get: d => esc(d.upper.toebox) || '-' },
     { label: 'Vamp', get: d => esc(d.upper.vamp) || '-' },
     { label: 'Quarter', get: d => esc(d.upper.quarter) || '-' },
     { label: 'Tongue', get: d => esc(d.upper.tongue) || '-' },
     { label: 'Lining', get: d => esc(d.upper.lining) || '-' },
     { label: 'Reinforcement', get: d => esc(d.upper.reinforcement) || '-' },
-    { label: 'Gusseted?', get: d => esc(d.upper.gusseted) || '-' },
+    { label: 'Lidah Gusseted?', get: d => esc(d.upper.gusseted) || '-' },
     { label: 'Padding', get: d => esc(d.upper.padding) || '-' },
-    { label: 'Upper Thickness', get: d => esc(d.upper.thickness) || '-' },
-    { section: 'Abrasion Test' },
-    { label: 'Upper Material 1', get: d => abCell(d.upper.abrasion && d.upper.abrasion.material1) },
-    { label: 'Upper Material 2', get: d => abCell(d.upper.abrasion && d.upper.abrasion.material2) },
-    { label: 'Upper Material 3', get: d => abCell(d.upper.abrasion && d.upper.abrasion.material3) },
-    { label: 'Lining', get: d => abCell(d.upper.abrasion && d.upper.abrasion.lining) },
+    { label: 'Ketebalan Upper', get: d => esc(d.upper.thickness) || '-' },
+    { section: 'Uji Gosok (Durabilitas)' },
+    { label: 'Lapisan Material 1', get: d => abCell(d.upper.abrasion && d.upper.abrasion.material1) },
+    { label: 'Lapisan Material 2', get: d => abCell(d.upper.abrasion && d.upper.abrasion.material2) },
+    { label: 'Lapisan Material 3', get: d => abCell(d.upper.abrasion && d.upper.abrasion.material3) },
+    { label: 'Kekuatan Lining', get: d => abCell(d.upper.abrasion && d.upper.abrasion.lining) },
   ];
 
   const bodyRows = rows.map(r => {
@@ -510,19 +553,19 @@ function renderCompare(items){
 
   return `
   <div class="actions" style="justify-content:space-between; margin-bottom:16px;">
-    <button class="btn secondary" onclick="go('list')">← Balik</button>
-    <h2 style="margin:0; font-size:16px;">⚖️ Compare ${items.length} Sepatu</h2>
+    <button class="btn secondary" onclick="go('list')">← Kembali</button>
+    <h2 style="margin:0; font-size:18px; font-weight:700;">⚖️ Komparasi Hasil Bedah (${items.length} Sepatu)</h2>
   </div>
   <div class="table-scroll">
     <table class="compare-table">
-      <thead><tr><th class="label-col">Field</th>${headerCols}</tr></thead>
+      <thead><tr><th class="label-col">Komponen</th>${headerCols}</tr></thead>
       <tbody>${bodyRows}</tbody>
     </table>
   </div>`;
 }
 
 async function deleteItem(id){
-  if(!confirm('Yakin hapus data sepatu ini?')) return;
+  if(!confirm('Apakah lo yakin ingin menghapus data sepatu ini secara permanen dari Google Sheets?')) return;
   try{
     await apiPost({ action: 'delete', id: id });
     cachedData = null;
@@ -542,9 +585,7 @@ async function exportData(){
     a.href = url; a.download = 'shoepolice-teardown-' + Date.now() + '.json';
     a.click();
     URL.revokeObjectURL(url);
-  } catch(err){
-    alert('Gagal export: ' + err.message);
-  }
+  } catch(err){ alert('Gagal export: ' + err.message); }
 }
 
 async function importData(e){
@@ -556,21 +597,16 @@ async function importData(e){
       const imported = JSON.parse(ev.target.result);
       if(!Array.isArray(imported)) throw new Error('Format salah');
       if(!confirm(`Import ${imported.length} data ke Google Sheets?`)) return;
-      for(const item of imported){
-        await apiPost({ action: 'create', item: item });
-      }
+      for(const item of imported){ await apiPost({ action: 'create', item: item }); }
       cachedData = null;
-      alert('Import berhasil! ' + imported.length + ' data diproses.');
+      alert('Import sukses!');
       go('list');
-    } catch(err){
-      alert('Gagal import: ' + err.message);
-    }
+    } catch(err){ alert('Gagal import: ' + err.message); }
   };
   reader.readAsText(file);
   e.target.value = '';
 }
 
-// ---------------- UTIL ----------------
 function esc(str){
   if(str === undefined || str === null) return '';
   return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
